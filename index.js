@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 require('dotenv').config()
 const UserRoutes = require('./routes/user.route');
 const PostRoutes = require('./routes/post.route');
+const BookmarkRoutes = require('./routes/bookmark.route');
 
 
 const app = express();
@@ -30,6 +31,7 @@ const aj = arcjet({
 
 app.use('/api/v1/users', UserRoutes);
 app.use('/api/v1/post', PostRoutes);
+app.use('/api/v1/bookmark', BookmarkRoutes);
 
 
 app.get('/', (req, res) => {

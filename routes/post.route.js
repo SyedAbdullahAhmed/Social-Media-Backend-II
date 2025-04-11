@@ -31,5 +31,6 @@ router.put(
 router.delete('/:id', verifyJWT, postController.deletePost);
 router.post('/:postId', verifyJWT, postController.handleLikePost);
 router.post('/:postId/comment', verifyJWT, postController.createComment);
+router.post('/:postId', verifyJWT, postController.incrementViews);
 
 module.exports = router;

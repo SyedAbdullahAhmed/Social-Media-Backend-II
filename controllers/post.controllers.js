@@ -1,5 +1,5 @@
 const Post = require('../models/post.model');
-const user = require('../models/user.model');
+const User = require('../models/user.model');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
@@ -207,6 +207,23 @@ const createComment = asyncHandler(async (req, res) => {
     );
 });
 
+const incrementViews = asyncHandler(async (req, res) => {
+    const { postId } = req.params;
+
+
+    const post = await Post.findById(postId);
+    if (!post) {
+        throw new ApiError(404, 'Post not found');
+    }
+
+    post.views += 1; 
+    await post.save();
+
+    res.status(200).json(
+        new ApiResponse(200, post, 'View added successfully')
+    );
+});
+
 
 module.exports = {
     createPost,
@@ -216,5 +233,6 @@ module.exports = {
     updatePost,
     deletePost,
     handleLikePost,
-    createComment
+    createComment,
+    incrementViews
 }
