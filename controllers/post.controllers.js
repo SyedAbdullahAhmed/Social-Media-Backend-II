@@ -56,7 +56,19 @@ const createPost = asyncHandler(async (req, res) => {
 
 
 const getAllPosts = asyncHandler(async (req, res) => {
-    const posts = await Post.find({}).populate('userId', 'fullName profilePath');
+
+    const { page, limit } = req.query;
+    const pageNumber = parseInt(page) || 1;
+    const limitNumber = parseInt(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+
+    const posts = await Post
+        .find({})
+        .skip(skip)
+        .limit(limitNumber)
+        .populate('userId', 'fullName profilePath');
+        
     if (!posts) {
         throw new ApiError(404, 'Posts not found');
     }
@@ -65,7 +77,18 @@ const getAllPosts = asyncHandler(async (req, res) => {
 
 const getMyPosts = asyncHandler(async (req, res) => {
     const { userId } = req.user;
-    const posts = await Post.find({ userId }).populate('userId', 'fullName profilePath');
+
+    const { page, limit } = req.query;
+    const pageNumber = parseInt(page) || 1;
+    const limitNumber = parseInt(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const posts = await Post
+        .find({ userId })
+        .skip(skip)
+        .limit(limitNumber)
+        .populate('userId', 'fullName profilePath');
+
     if (!posts) {
         throw new ApiError(404, 'Posts not found');
     }

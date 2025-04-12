@@ -1,5 +1,5 @@
 const express = require('express');
-const { createBookmark, deleteBookmark } = require('../controllers/bookmarkController');
+const { createBookmark, deleteBookmark, getBookmark, getAllBookmark } = require('../controllers/bookmark.controllers');
 const { verifyJWT } = require('../middlewares/auth.middleware');
 
 const router = express.Router();

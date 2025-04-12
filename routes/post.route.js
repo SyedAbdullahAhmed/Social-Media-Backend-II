@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const postController = require('../controllers/post.controller');
+const postController = require('../controllers/post.controllers');
 const { verifyJWT } = require('../middlewares/auth.middleware');
-const upload = require('../middleware/upload'); // e.g. multer config
+const upload = require('../middlewares/multer.middleware'); // e.g. multer config
 
 router.post(
   '/',

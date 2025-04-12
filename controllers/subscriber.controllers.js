@@ -5,8 +5,8 @@ const asyncHandler = require('../utils/asyncHandler');
 
 
 const createSubscriber = asyncHandler(async (req, res) => {
-    const { userId } = req.user;  
-    const { subscriberId } = req.params; 
+    const { userId } = req.user;
+    const { subscriberId } = req.params;
 
     if (!subscriberId) {
         throw new ApiError(400, 'Subscriber ID is required');
@@ -30,8 +30,19 @@ const createSubscriber = asyncHandler(async (req, res) => {
 
 
 const getAllSubscribers = asyncHandler(async (req, res) => {
-    const { userId } = req.user;  
-    const subscribers = await Subscriber.find({ userId }).populate('subscribers', 'name profilePicture email');
+
+    const { page, limit } = req.query;
+    const pageNumber = parseInt(page) || 1;
+    const limitNumber = parseInt(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+
+    const { userId } = req.user;
+    const subscribers = await Subscriber
+        .find({ userId })
+        .skip(skip)
+        .limit(limitNumber)
+        .populate('subscribers', 'name profilePicture email');
 
     if (!subscribers) {
         throw new ApiError(404, 'No subscribers found');
@@ -42,8 +53,8 @@ const getAllSubscribers = asyncHandler(async (req, res) => {
 
 
 const getSubscriber = asyncHandler(async (req, res) => {
-    const { userId } = req.user;  
-    const { subscriberId } = req.params; 
+    const { userId } = req.user;
+    const { subscriberId } = req.params;
 
     if (!subscriberId) {
         throw new ApiError(400, 'Subscriber ID is required');
@@ -60,8 +71,8 @@ const getSubscriber = asyncHandler(async (req, res) => {
 
 
 const removeSubscriber = asyncHandler(async (req, res) => {
-    const { userId } = req.user;  
-    const { subscriberId } = req.params; 
+    const { userId } = req.user;
+    const { subscriberId } = req.params;
 
     if (!subscriberId) {
         throw new ApiError(400, 'Subscriber ID is required');
@@ -72,7 +83,7 @@ const removeSubscriber = asyncHandler(async (req, res) => {
     }
     subscriber.subscribers.filter(sub => sub.toString() !== subscriberId);
     await subscriber.save();
-    
+
     res.status(200).json(new ApiResponse(200, subscriber, 'Subscriber removed successfully'));
 })
 

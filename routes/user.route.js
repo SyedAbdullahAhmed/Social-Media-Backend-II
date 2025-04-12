@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer')
 const upload = multer()
 const { createUser, getUser, getUsers, updateUser, deleteUser, verifyUser, loginUser, forgotPassword, logoutUser } = require('../controllers/user.controllers');
+const { verifyJWT } = require('../middlewares/auth.middleware');
 
 // Controller function names (actual logic in controller file)
 router.post('/signup', upload.fields([

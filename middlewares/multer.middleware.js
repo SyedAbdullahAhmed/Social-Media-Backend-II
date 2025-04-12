@@ -1,5 +1,4 @@
-import multer from "multer";
-
+const multer = require("multer") 
 const storage = multer.diskStorage({// use dist storage or memeory storage
     destination: function (req, file, cb) {
       cb(null, "./public/") // file is on server before uploading on cloudinary 
@@ -9,6 +8,6 @@ const storage = multer.diskStorage({// use dist storage or memeory storage
     }
   })
   
-export const upload = multer({ 
+module.exports = upload = multer({ 
     storage, 
 })

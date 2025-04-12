@@ -7,6 +7,9 @@ const sendMail = require('../utils/sendMail');
 const bcrypt = require('bcryptjs');
 const { codeGenerator } = require('../utils/codeGenerator');
 const generateTokens = require('../utils/generateTokens');
+const validateUserEmailUsingArcjet = require('../utils/validateEmailUsingArcjet')
+
+
 
 
 const createUser = asyncHandler(async (req, res) => {
@@ -31,12 +34,11 @@ const createUser = asyncHandler(async (req, res) => {
 
 
     // arcjet validation
-    const decision = await aj.protect(req, {
-        email,
-    });
-    if (decision.isDenied()) {
-        throw new ApiError(403, 'Forbidden: Email is disposable or invalid');
+    const isValidEmail = await validateUserEmailUsingArcjet(req, email);
+    if (!isValidEmail) {
+        throw new ApiError(400, 'Email is disposable or invalid');
     }
+
 
     // profile image handling
     let localPath;
@@ -63,8 +65,8 @@ const createUser = asyncHandler(async (req, res) => {
         phone,
         email,
         password: hashPassword,
-    profilePath: localPath,
-     otp: otpCode,
+        profilePath: localPath,
+        otp: otpCode,
     });
     await user.save();
 
@@ -95,11 +97,11 @@ const getUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Invalid ID format');
     }
 
-    if(!req.user) {
+    if (!req.user) {
         throw new ApiError(401, 'Unauthorized');
     }
 
-    if(!req.user._id.equals(id)) {
+    if (!req.user._id.equals(id)) {
         throw new ApiError(403, 'Forbidden');
     }
     res.status(200).json(new ApiResponse(200, user, "User found successfully"));
@@ -107,7 +109,12 @@ const getUser = asyncHandler(async (req, res) => {
 
 
 const getUsers = asyncHandler(async (req, res) => {
-    const users = await User.find({});
+    const { page, limit } = req.query;
+    const pageNumber = parseInt(page) || 1;
+    const limitNumber = parseInt(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const users = await User.find({}).skip(skip).limit(limitNumber);
     if (!users) {
         throw new ApiError(404, 'Users not found');
     }
@@ -118,34 +125,35 @@ const getUsers = asyncHandler(async (req, res) => {
 const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { fullName, age, address, phone, email, password } = req.body;
-  
+
     if (!id) throw new ApiError(400, 'ID is required');
     if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Invalid ID format');
-  
+
     if (!fullName && !age && !address && !phone && !email && !password && !req.files?.profile) {
-      throw new ApiError(400, 'At least one field must be provided for update');
+        throw new ApiError(400, 'At least one field must be provided for update');
     }
-  
+
     if (email) {
-      const decision = await aj.protect(req, { email });
-      if (decision.isDenied()) {
-        throw new ApiError(403, 'Forbidden: Email is disposable or invalid');
-      }
+        // arcjet validation
+        const isValidEmail = await validateUserEmailUsingArcjet(req, email);
+        if (!isValidEmail) {
+            throw new ApiError(400, 'Email is disposable or invalid');
+        }
     }
-  
+
     let profilePath;
     if (req.files && Array.isArray(req.files.profile) && req.files.profile.length > 0) {
-      profilePath = req.files.profile[0].path;
+        profilePath = req.files.profile[0].path;
     }
-  
+
     const user = await User.findById(id);
     if (!user) throw new ApiError(404, 'User not found');
-  
+
     if (email && email !== user.email) {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) throw new ApiError(400, 'Email already in use by another account');
+        const existingUser = await User.findOne({ email });
+        if (existingUser) throw new ApiError(400, 'Email already in use by another account');
     }
-  
+
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -157,12 +165,12 @@ const updateUser = asyncHandler(async (req, res) => {
     if (email) updateFields.email = email;
     if (password) updateFields.password = hashPassword // hash before saving
     if (profilePath) updateFields.profilePath = profilePath;
-  
+
     await User.findByIdAndUpdate(id, updateFields, { new: true });
-  
+
     res.status(200).json(new ApiResponse(200, null, 'User updated successfully'));
-  });
-  
+});
+
 
 const deleteUser = asyncHandler(async (req, res) => {
     const id = req.params.id;
@@ -264,7 +272,7 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!isPasswordCorrect) {
         throw new ApiError(400, 'Invalid password');
     }
-    const { accessToken,refreshToken } = generateTokens(user._id, user.role, user.email);
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role, user.email);
     res.status(200).json(new ApiResponse(200, { accessToken, refreshToken }, 'User logged in successfully'));
 })
 
