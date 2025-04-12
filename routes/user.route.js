@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer')
 const upload = multer()
-const { createUser, getUser, getUsers, updateUser, deleteUser, verifyUser, loginUser, forgotPassword, logoutUser } = require('../controllers/user.controllers');
+const { createUser, getUser, getUsers, updateUser, deleteUser, verifyUser, loginUser, forgotPassword, logoutUser, newRefreshToken } = require('../controllers/user.controllers');
 const { verifyJWT } = require('../middlewares/auth.middleware');
 
 // Controller function names (actual logic in controller file)
@@ -23,6 +23,7 @@ router.put('/:id', verifyJWT, upload.fields([
 ]), updateUser);
 router.delete('/:id',verifyJWT, deleteUser);
 router.delete('/logout', verifyJWT, logoutUser);
+router.post('/refresh/:token', verifyJWT, newRefreshToken);
 
 // Export the router
 module.exports = router;

@@ -248,6 +248,24 @@ const incrementViews = asyncHandler(async (req, res) => {
 });
 
 
+const incrementShares = asyncHandler(async (req, res) => {
+    const { postId } = req.params;
+
+
+    const post = await Post.findById(postId);
+    if (!post) {
+        throw new ApiError(404, 'Post not found');
+    }
+
+    post.shares += 1; 
+    await post.save();
+
+    res.status(200).json(
+        new ApiResponse(200, post, 'Share increament successfully')
+    );
+});
+
+
 module.exports = {
     createPost,
     getMyPosts,
@@ -257,5 +275,6 @@ module.exports = {
     deletePost,
     handleLikePost,
     createComment,
-    incrementViews
+    incrementViews,
+    incrementShares
 }

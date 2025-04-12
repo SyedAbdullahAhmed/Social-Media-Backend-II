@@ -22,3 +22,27 @@ const subscriberSchema = new mongoose.Schema({
 const Subscriber = mongoose.model('Subscriber', subscriberSchema);
 
 module.exports = Subscriber;
+
+// get the used id
+
+// ROLE:CREATOR
+// -liked post
+// -commented post
+// -shared post
+// -views post
+// -subscribed channel
+
+// ROLE:USER
+// -subscriber post 
+
+
+/**
+ * data: {like: true, comment: true, shares: true, views: true}
+ * notification: {
+ *  like: [1,2,3],
+ *  comment: [1,2,3],
+ *  shares: [1,2,3],
+ *  views: [1,2,3],
+ *  subscribes: [1,2,3],
+ * }
+ */

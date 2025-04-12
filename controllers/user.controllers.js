@@ -2,7 +2,6 @@ const User = require('../models/user.model');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
-const aj = require('../index')
 const sendMail = require('../utils/sendMail');
 const bcrypt = require('bcryptjs');
 const { codeGenerator } = require('../utils/codeGenerator');
@@ -286,6 +285,23 @@ const logoutUser = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, null, 'User logged out successfully'));
 })
 
+const newRefreshToken = asyncHandler(async (req, res) => {
+    const { token } = req.params;
+    if (!token) {
+        throw new ApiError(400, 'Refresh token is required');
+    }
+    const user = await User.findOne({ refreshToken: token });
+    if (!user) {
+        throw new ApiError(404, 'User not found');
+    }
+    if (!user.isVerified) {
+        throw new ApiError(400, 'User not verified');
+    }
+    const { accessToken, refreshToken } = generateTokens(user._id, user.role, user.email);
+
+    res.status(200).json(new ApiResponse(200, { accessToken, refreshToken }, 'New refresh token generated successfully'));
+})
+
 module.exports = {
     createUser,
     getUser,
@@ -295,5 +311,6 @@ module.exports = {
     verifyUser,
     forgotPassword,
     loginUser,
-    logoutUser
+    logoutUser,
+    newRefreshToken
 }

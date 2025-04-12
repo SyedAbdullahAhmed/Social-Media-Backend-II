@@ -8,6 +8,8 @@ const storage = multer.diskStorage({// use dist storage or memeory storage
     }
   })
   
-module.exports = upload = multer({ 
+const upload = multer({ 
     storage, 
 })
+
+module.exports = { upload } 

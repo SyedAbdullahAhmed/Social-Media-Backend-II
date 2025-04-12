@@ -3,9 +3,10 @@ const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const User = require('../models/user.model');
 const Post = require('../models/post.model');
+const Channel = require('../models/channel.model');
 
 const searchAnything = asyncHandler(async (req, res) => {
-    
+
     const { query } = req.params;
     if (!query) {
         throw new ApiError(400, 'Query is required');
@@ -20,10 +21,21 @@ const searchAnything = asyncHandler(async (req, res) => {
         .limit(5)
         .populate('userId', 'fullName profilePath');
 
+    const channels = await Channel
+        .find({
+            $or: [
+                { channelName: { $regex: query, $options: 'i' } },
+                { channelDescription: { $regex: query, $options: 'i' } }
+            ]
+        })
+        .limit(5)
+        .populate('userId', 'fullName profilePath');
+
+
     res
         .status(200)
         .json(new ApiResponse(
-            200, { users, posts }, 'Search results found successfully'
+            200, { users, posts, channels }, 'Search results found successfully'
         ));
 });
 
