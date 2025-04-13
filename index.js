@@ -1,7 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
 require('dotenv').config()
 const UserRoutes = require('./routes/user.route');
 const PostRoutes = require('./routes/post.route');
@@ -9,10 +7,24 @@ const BookmarkRoutes = require('./routes/bookmark.route');
 const ChannelRoutes = require('./routes/channel.route');
 const SearchRoutes = require('./routes/search.route');
 const subscriberRoutes = require('./routes/subscriber.route');
-
+const roleBasedRateLimiter = require('./config/rateLimiter.js');
+const roleBasedSlowDown = require('./config/slowDown.js');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const corsOptions = {
+    origin: "*",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
+  };
+
+  
+  
+  // Use the role-based limiter middleware
+  app.use(roleBasedSlowDown);
+  app.use(roleBasedRateLimiter);
+  
 
 app.use(express.json());
 app.use(cors());
